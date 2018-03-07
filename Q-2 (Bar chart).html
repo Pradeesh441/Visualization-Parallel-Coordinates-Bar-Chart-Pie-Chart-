@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis line,
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.path-line {
+  fill: none;
+  stroke: yellow;
+  stroke-width: 1.5px;
+}
+svg {
+  background: #f0f0f0;
+}
+</style>
+<body onload="init()">
+<div id='Horizontal-bars'></div>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script>
+
+//Setting the range for the key values for A and B with their totals
+
+function init()
+
+{
+  var data = 
+ [{ranger:"65+","total":5900,
+   "A":3000,"B":2900},
+ {ranger:"55-64","total":13200,
+   "A":10000,"B":3200},
+ {ranger:"45-54","total":25200,
+   "A":20000,"B":5200},
+ {ranger:"35-44","total":63500,
+ "A":56000,"B":7500},
+ {ranger:"25-34","total":100200,
+ "A":70200,"B":30000},
+ {ranger:"18-24","total":55000,
+ "A":43000,"B":12000},
+ ];
+			
+	    var key = ["A", "B"];
+			
+        
+		var drawbar = function(config) {
+		me = this,
+		ele = config.element,
+		stackKey = config.key,
+		
+		data = config.data,
+		margin = {top: 21, right: 25, bottom: 30, left: 49},
+		width = 1020 - margin.left - margin.right,
+		height = 500 - margin.top - margin.bottom,
+		
+		xScale = d3.scaleLinear().rangeRound([0, width]),
+		yScale = d3.scaleBand().rangeRound([height, 0]).padding(0.1),
+		
+		
+		//Adding color to the x and y axis
+		color = d3.scaleOrdinal(d3.schemeCategory20),
+		xAxis = d3.axisBottom(xScale),
+		yAxis =  d3.axisLeft(yScale),
+		
+		
+		//Setting the height and width of the bar chart
+		svg = d3.select("#"+ele).append("svg")
+				.attr("width", 635 + margin.left + margin.right)
+				.attr("height",455 + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var stack = d3.stack()
+			.keys(stackKey)
+			.offset(d3.stackOffsetNone);
+			
+	    
+		var layers= stack(data);
+			yScale.domain(data.map(function(d) { return d.ranger; }));
+			xScale.domain([0, d3.max(layers[layers.length - 1], function(d) { 
+		        x = d[0] + d[1];
+				return x; }) ]).nice();
+
+		var layer = svg.selectAll(".layer")
+			.data(layers)
+			.enter().append("g")
+			.attr("class", "layer")
+			.style("fill", function(d, i) { return color(i); });
+
+		  layer.selectAll("rect")
+			  .data(function(d) { return d; })
+			  .enter().append("rect")
+			  
+			  .attr("y", function(d) { return yScale(d.data.ranger); })
+			  .attr("x", function(d) { return xScale(d[0]); })
+			  .attr("height", yScale.bandwidth())
+			  .attr("width", function(d) { return xScale(d[1]) - xScale(d[0]) });
+
+			svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(0," + (height) + ")")
+			.call(xAxis);
+
+			svg.append("g")
+			.attr("class", "axis")
+			.attr("transform", "translate(0,0)")
+			.call(yAxis);
+			}
+			
+//Adding key element to the horizontal bar chart
+drawbar(
+{ data: data, key: key,element: 'Horizontal-bars'});
+}
+
+</script>
